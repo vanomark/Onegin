@@ -4,31 +4,30 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-
-const int number_of_raws = 5;
-const int length_of_raw = 10;
+const int number_of_raws = 9;
+const int length_of_raw = 50;
 
 void bubble_sort(char *index[]);
 int turn_lowercase(char *str);
 int string_compare(const char *str1, const char *str2);
 
 int main()
-{
-    char text[number_of_raws][length_of_raw] = {
-        "Uebok",
-        "Pidorast",
-        "Aondon",
-        "huy",
-        "apedic",
-    };
+{   
+    char string[length_of_raw] = "";
+    char text[number_of_raws][length_of_raw] = {};
+    char *index[number_of_raws] = {};
 
-    char *index[number_of_raws] = {
-        text[0] + 0 * length_of_raw,
-        text[0] + 1 * length_of_raw,
-        text[0] + 2 * length_of_raw,
-        text[0] + 3 * length_of_raw,
-        text[0] + 4 * length_of_raw,
-    };
+    printf("%d\n", strlen("skdfkjdsjkvbkfjvekjfverjnvkejrnkvjenrkjvenrjvnkenkrevkerjnvkerjvksjdcnkenkfcrkec"));
+
+    FILE *onegin = fopen("start_file.txt", "r");
+    for (int i = 0; fscanf(onegin, "%s", string) != EOF; i++) {
+        printf("%s\n", string);
+        strcpy(text[i], string);
+        printf("%s\n", text[i]);
+    }   
+
+    for (int i = 0; i < number_of_raws; i++)
+            index[i] = text[0] + i * length_of_raw;
 
     for (int i = 0; i < number_of_raws; i++) {
         printf("%d: %s\n", (size_t) index[i], index[i]);
@@ -54,7 +53,9 @@ int main()
 }
 
 void bubble_sort(char* *index) 
-{
+{   
+    assert(index);
+    
     for(int sort_count = 0; sort_count < number_of_raws; sort_count++) {
         char *str = 0;
         for (int i = 1; i < number_of_raws; i++) {
@@ -72,7 +73,9 @@ void bubble_sort(char* *index)
 }
 
 int turn_lowercase(char *str) 
-{
+{   
+    assert(str);
+
     int i = 0;
     while (str[i] != '\0') {
         str[i] = (char) tolower(str[i]);
@@ -83,7 +86,10 @@ int turn_lowercase(char *str)
 }
 
 int string_compare(const char *str1, const char *str2)
-{
+{   
+    assert(str1);
+    assert(str2);
+
     for (int i = 0; i < length_of_raw; i++) {
 
         char ch1 = *(str1 + i);
@@ -100,3 +106,4 @@ int string_compare(const char *str1, const char *str2)
 
     return 0;
 }
+
