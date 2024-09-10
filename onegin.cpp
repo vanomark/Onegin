@@ -4,8 +4,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-const int number_of_raws = 9;
-const int length_of_raw = 50;
+const int number_of_raws = 100;
+const int length_of_raw = 80;
 
 void bubble_sort(char *index[]);
 int turn_lowercase(char *str);
@@ -17,14 +17,16 @@ int main()
     char text[number_of_raws][length_of_raw] = {};
     char *index[number_of_raws] = {};
 
-    printf("%d\n", strlen("skdfkjdsjkvbkfjvekjfverjnvkejrnkvjenrkjvenrjvnkenkrevkerjnvkerjvksjdcnkenkfcrkec"));
 
     FILE *onegin = fopen("start_file.txt", "r");
-    for (int i = 0; fscanf(onegin, "%s", string) != EOF; i++) {
+    assert(onegin);
+
+    for (int i = 0; i < number_of_raws; i++) {
+        fgets(string, length_of_raw, onegin);
         printf("%s\n", string);
         strcpy(text[i], string);
-        printf("%s\n", text[i]);
     }   
+    fclose(onegin);
 
     for (int i = 0; i < number_of_raws; i++)
             index[i] = text[0] + i * length_of_raw;
@@ -41,8 +43,13 @@ int main()
     printf("%d\n", strcmp("abcd", "abcs"));
     bubble_sort(&index[0]);
 
+    FILE *finish_file = fopen("finish_file.txt", "w");
+
+    assert(finish_file);
+
     for (int i = 0; i < number_of_raws; i++) {
         printf("%d: %s\n", (size_t) index[i], index[i]);
+        fprintf(finish_file, "%s", index[i]);
 
         for (int j = 0; j < length_of_raw; j++) {
             printf("%d: %c\n", (size_t) index[i] + j, index[i][j]);
