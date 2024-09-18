@@ -6,117 +6,76 @@
 #include <sys/stat.h>
 // #include <TXLib.h>
 
-void    bubble_sort          (char* *raw_address, int number_of_raws);
-int     turn_lowercase       (char *str);
-int     string_compare       (char *str1, char *str2);
+int     tell_file_size              (FILE * fp);
+int     determine_string_addresses  (char* *raw_address, char* buffer, int number_of_raws, int array_size);
+void    bubble_sort                 (char* *raw_address, int number_of_raws);
+int     string_compare              (char *str1, char *str2);
+int     turn_lowercase              (char *str);
+int     create_text_file            (const char * name_of_file, int number_of_raws, char* *raw_address);
+
+typedef int(* compare_func_t)(void *a, void *b);
 
 int main()
 {   
-    FILE *onegin = fopen("start_file.txt", "rb");
-    assert(onegin);
-    
-    fseek(onegin, 0, SEEK_END);
-    int size_of_file = ftell(onegin);
-    fseek(onegin, 0, SEEK_SET);
+    FILE*   openfile        = NULL;
+    char*   buffer          = NULL;
+    char**  raw_address     = NULL;
+    int     size_of_file    = 0;
+    int     number_of_raws  = 0;
 
-    char *buffer = (char *) calloc(size_of_file + 1, sizeof(char));
+    openfile = fopen("start_file.txt", "r");
+
+    size_of_file = tell_file_size(openfile);
+    buffer = (char *) calloc(size_of_file + 1, sizeof(char));
+
+    number_of_raws = size_of_file - fread(buffer, sizeof(char), size_of_file, openfile);
+    fclose(openfile);
+
+    raw_address = (char **) calloc(number_of_raws + 1, sizeof(char *));
+
+    assert(openfile);
     assert(buffer);
-    buffer[size_of_file + 1] = '\0';
-    
-    fprintf(stderr, "address of buffer: %d\n", buffer);
+    assert(raw_address);
 
-    printf("%d %d %d\n", fread(buffer, sizeof(char), size_of_file, onegin), size_of_file, sizeof(buffer));
-    fprintf(stderr, "address of buffer: %d\n", buffer);
-                                                                               // int ptrsize = 10;
-
-    int number_of_raws = 0;
-    for (int i = 0; i < size_of_file; i++) {
-        if (buffer[i] == '\n')       
-            number_of_raws++; 
-    }   
-    
-    char* *raw_address = (char* *) calloc(number_of_raws + 1, sizeof(char));
     raw_address[0] = buffer;
+    buffer[size_of_file + 1] = '\0';
 
-    for (int i = 0, raw_number = 0; i < size_of_file; i++) {
+    determine_string_addresses(raw_address, buffer, number_of_raws, size_of_file);    
+    bubble_sort(raw_address, number_of_raws);
+    create_text_file("finish_file.txt", number_of_raws, raw_address);
 
-        if (i == 0) 
-            printf("%d: %d\n", i, &buffer[i]);
+    return 0;
+}
 
-        if (buffer[i] != '\r' )
-            printf("%c", buffer[i]);
+int tell_file_size(FILE * fp)
+{
+    fseek(fp, 0, SEEK_END);
+    int size_of_file = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
-        if (buffer[i] == '\r') {
+    return size_of_file;
+}
+
+int determine_string_addresses(char* *raw_address, char* buffer, int number_of_raws, int array_size)
+{   
+    assert(raw_address);
+    assert(buffer);
+
+    for (int i = 0, raw_number = 0; i < array_size; i++) {
+
+        if (buffer[i] == '\n') {
             buffer[i] = '\0';
             raw_number++; 
-            fprintf(stderr, "\naddress of %d elem of buffer: %d\n", i, &buffer[i]);
-            fprintf(stderr, "%d %d %d\n", raw_number, number_of_raws, sizeof(raw_address));
 
-            if (i + 2 <= size_of_file) {                      // i i+1 i+2
-                raw_address[raw_number] = &buffer[i + 2];     // \r \n A
-                printf("%d: %s\n", raw_number-1, raw_address[raw_number-1]);
+            if (i + 1 <= array_size - number_of_raws) {                      
+                raw_address[raw_number] = &buffer[i + 1];     
             } else {
-                fprintf(stderr, "ABABABFKEFMEWMFPWEMFPWEPFWEFWPEOFPWOEFPOW\n[%d] [%c] [%s]\n", i, buffer[i], raw_address[raw_number]);
                 buffer[i] = '\0';
                 raw_address[raw_number] = 0;
                 break;
             }   
-            
-        
         } 
     }
-       
-    fclose(onegin);
-
-                                                                                // int number_of_raws = 0;
-                                                                                // for (int i = 0, raw_number = 0; i < size_of_file; i++) {
-                                                                                //     number_of_raws = raw_number;
-
-                                                                                //     printf("%c", buffer[i]);
-
-                                                                                //     if (buffer[i] == '\r') {
-                                                                                //         buffer[i] = '\0';
-                                                                                        
-                                                                                //         printf("%d %d %d\n", raw_number, ptrsize, sizeof(raw_address));
-
-                                                                                //         if (raw_number >= ptrsize) {
-                                                                                //             printf("HUUY\n\n");
-                                                                                //             ptrsize *= 2;
-                                                                                            
-                                                                                //             printf("%d %d \n", raw_number, ptrsize);
-
-                                                                                //             raw_address = (char **) realloc(raw_address, (ptrsize + 1) * sizeof(char));
-                                                                                //             assert(raw_address);
-                                                                                //         }
-                                                                                //         raw_address[raw_number] = buffer + i + 2;      
-                                                                                //         raw_number++; 
-                                                                                //     }
-                                                                                // }   
-                                                                                // fclose(onegin);
-
-    for (int raw_number = 0; raw_number < number_of_raws; raw_number++) {
-        if (1)
-            printf("%s\n", raw_address[raw_number]);
-    }
-    
-    bubble_sort(raw_address, number_of_raws);
-    raw_address[number_of_raws + 1] = 0;
-
-    for (int i = 0; i < number_of_raws; i++) {
-        printf("%s\n", raw_address[i]);
-
-
-    }
-
-    FILE *finish_file = fopen("finish_file.txt", "wb");
-    assert(finish_file);
-
-    for (int raw_number = 0; raw_number < number_of_raws; raw_number++) {
-        if (1)
-            printf("%s\n", raw_address[raw_number]);
-            fprintf(finish_file, "%s\n", raw_address[raw_number]);
-    }
-    fclose(finish_file);
 
     return 0;
 }
@@ -130,7 +89,6 @@ void bubble_sort(char* *raw_address, int number_of_raws)
     for(int sort_count = 0; sort_count < number_of_raws; sort_count++) {
         for (int i = 1; i < number_of_raws; i++) {
 
-            // printf("prev %d %s \n curr %d %s \n", raw_address[i-1], raw_address[i-1], raw_address[i], raw_address[i]);
             char *str = 0;
             if (string_compare(raw_address[i-1], raw_address[i]) > 0) {       
                 
@@ -141,6 +99,35 @@ void bubble_sort(char* *raw_address, int number_of_raws)
             } 
         }
     }
+}
+
+int string_compare(char *str1, char *str2)
+{   
+    assert(str1);
+    assert(str2);
+
+    for (size_t i = 0; i < strlen(str1); i++) {
+
+        char ch1 = str1[i];
+        char ch2 = str2[i];
+
+        turn_lowercase(&ch1);
+        turn_lowercase(&ch2);
+        
+        if (i == 0) {
+            str1[i] = (char) toupper(str1[i]);
+            str2[i] = (char) toupper(str2[i]);
+        }
+
+        if (!isalnum(ch1)) {
+            
+        }
+
+        if (ch1 - ch2 != 0)
+            return ch1 - ch2;
+    }
+
+    return 0;
 }
 
 int turn_lowercase(char *str) 
@@ -156,22 +143,20 @@ int turn_lowercase(char *str)
     return 0;
 }
 
-int string_compare(char *str1, char *str2)
+int create_text_file(const char * name_of_file, int number_of_raws, char* *raw_address)
 {   
-    assert(str1);
-    assert(str2);
+    assert(name_of_file);
+    assert(raw_address);
 
-    for (size_t i = 0; i < strlen(str1); i++) {
+    FILE *finish_file = fopen(name_of_file, "wb");
+    assert(finish_file);
 
-        char ch1 = *(str1 + i);
-        char ch2 = *(str2 + i);
-
-        turn_lowercase(&ch1);
-        turn_lowercase(&ch2);
-        
-        if (ch1 - ch2 != 0)
-            return ch1 - ch2;
+    for (int raw_number = 0; raw_number < number_of_raws; raw_number++) {
+        if (strlen(raw_address[raw_number]) > 22) //todo
+            fprintf(finish_file, "%s\n", raw_address[raw_number]);
     }
+    fclose(finish_file);
 
     return 0;
 }
+
