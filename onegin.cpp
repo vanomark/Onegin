@@ -28,19 +28,16 @@ struct text_file_stat {
 
 int main(const int argc, char* const argv[])
 {   
-    char*   buffer          = NULL;
-    char**  raw_address     = NULL;
-    int     size_of_file    =    0;
-    int     number_of_raws  =    0;
+    text_file_stat onegin = {};
 
-    get_file_info("start_file.txt", &buffer, &raw_address, &size_of_file, &number_of_raws);
+    get_file_info("start_file.txt", &onegin.buffer, &onegin.raw_address, &onegin.size_of_file, &onegin.number_of_raws);
 
-    assert(buffer);
-    assert(raw_address);
+    assert(onegin.buffer);
+    assert(onegin.raw_address);
 
-    set_string_addresses(buffer, raw_address, number_of_raws, size_of_file);    
-    quick_sort(raw_address, number_of_raws, &string_compare);
-    create_text_file("finish_file.txt", number_of_raws, raw_address);
+    set_string_addresses(onegin.buffer, onegin.raw_address, onegin.number_of_raws, onegin.size_of_file);    
+    quick_sort(onegin.raw_address, onegin.number_of_raws, &string_compare);
+    create_text_file("finish_file.txt", onegin.number_of_raws, onegin.raw_address);
 
     return 0;
 }
@@ -109,7 +106,7 @@ int quick_sort(char** raw_address, int number_of_raws, int (*compare_func)(char*
             char *str = 0;
             if ((*compare_func)(raw_address[i-1], raw_address[i]) > 0) {       
                 
-                str = raw_address[i-1];
+                str = *(char **) ( (size_t) raw_address + (i-1) * sizeof(char *) );
                 raw_address[i-1] = raw_address[i];
                 raw_address[i] = str;
 
@@ -124,18 +121,18 @@ int rev_string_compare(char *str1, char *str2)
     assert(str1);
     assert(str2);
 
-    for (int i = strlen(str1), j = strlen(str2); i > 0, j > 0; i--, j--) {
+    for (int i = strlen(str1) - 1, j = strlen(str2) - 1; i > 0, j > 0; i--, j--) {
         
+        while (!isalpha(str1[i]) && i > 0)
+            i--;
+        while (!isalpha(str2[j]) && j > 0)
+            j--;
+
         char ch1 = str1[i];
         char ch2 = str2[j];
 
         turn_lowercase(&ch1);
         turn_lowercase(&ch2);
-        
-        if (i == 0) 
-            str1[i] = (char) toupper(str1[i]);
-        if (j == 0)
-            str2[j] = (char) toupper(str2[j]);
 
         if (ch1 - ch2 != 0)
             return ch1 - ch2;
@@ -196,8 +193,8 @@ int create_text_file(const char* name_of_file, int number_of_raws, char** raw_ad
     assert(finish_file);
 
     for (int raw_number = 0; raw_number < number_of_raws; raw_number++) {
-        if (strlen(raw_address[raw_number]) > min_str_length) //todo
-            fprintf(finish_file, "%s\n", raw_address[raw_number]);
+        if (strlen(raw_address[raw_number]) > min_str_length) 
+            fprintf(finish_file, "%-50s\n", raw_address[raw_number]);
     }
     fclose(finish_file);
 
